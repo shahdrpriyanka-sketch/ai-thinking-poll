@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI for Thinking Poll — Live</title>
+<style>
+:root{
+--bg:#f4f7fb;--surface:#ffffff;--fg:#101828;--muted:#5b6b7a;--line:#dfe7ee;
+--accent:#0f766e;--accent2:#2563eb;--accent-fg:#fff;--accent-soft:#e6f6f3;
+--warn:#dc2626;--gold:#f59e0b;--radius:18px;
+--c1:#0f766e;--c2:#2563eb;--c3:#f59e0b;--c4:#7c3aed;--c5:#e11d48
+}
+@media (prefers-color-scheme:dark){
+:root{--bg:#0b1220;--surface:#111c2e;--fg:#e8f0f7;--muted:#9db0c0;--line:#26374b;--accent:#2dd4bf;--accent2:#60a5fa;--accent-fg:#04201d;--accent-soft:#0f3b38;--warn:#f87171}
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--fg);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+radial-gradient(800px 420px at 5% -10%,rgba(15,118,110,.20),transparent 60%),
+radial-gradient(750px 420px at 100% -5%,rgba(37,99,235,.18),transparent 60%),
+radial-gradient(700px 500px at 50% 115%,rgba(245,158,11,.13),transparent 60%)}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 70px;display:flex;flex-direction:column;gap:18px}
+.hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:26px;padding:28px 22px;background:linear-gradient(135deg,rgba(15,118,110,.92),rgba(37,99,235,.88));color:#fff;box-shadow:0 20px 45px rgba(15,23,42,.18)}
+.hero::after{content:"";position:absolute;right:-70px;top:-70px;width:230px;height:230px;border-radius:50%;background:rgba(255,255,255,.13)}
+.hero .kicker{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.82)}
+.hero h1{margin:8px 0 6px;font-size:clamp(26px,5vw,40px);line-height:1.1;letter-spacing:-.02em}
+.hero p{margin:0;max-width:640px;color:rgba(255,255,255,.88)}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);font-size:12px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 5px rgba(74,222,128,.22);animation:pulse 1.7s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.tabs{position:sticky;top:10px;z-index:20;display:flex;gap:8px;padding:8px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(12px);box-shadow:0 10px 25px rgba(15,23,42,.08)}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);font:800 14px inherit;font-family:inherit;padding:11px 8px;border-radius:999px;cursor:pointer;transition:.18s}
+.tab:hover{color:var(--fg)}
+.tab[aria-selected="true"]{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 6px 18px rgba(15,118,110,.25)}
+.panel[hidden]{display:none}
+.panel{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 10px 28px rgba(15,23,42,.06);transition:transform .18s,box-shadow .18s}
+.card:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(15,23,42,.10)}
+.qhead{display:flex;gap:10px;align-items:flex-start}
+.qn{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:800;font-size:13px}
+.q{margin:4px 0 0;font-size:18px;font-weight:800;line-height:1.3}
+.opts{display:grid;gap:10px;margin-top:14px}
+.opt{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:54px;text-align:left;font:600 15px inherit;font-family:inherit;color:var(--fg);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;transition:.16s}
+.opt:hover{border-color:var(--accent);transform:translateX(3px)}
+.opt .letter{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:2px solid var(--muted);color:var(--muted);font-size:12px;font-weight:800}
+.opt .check{margin-left:auto;opacity:0;transform:scale(.5);transition:.18s;color:var(--accent);font-size:20px;font-weight:900}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:linear-gradient(90deg,var(--accent-soft),color-mix(in srgb,var(--accent-soft) 55%,var(--surface)));box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 15%,transparent)}
+.opt[aria-pressed="true"] .letter{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.opt[aria-pressed="true"] .check{opacity:1;transform:scale(1)}
+.opt[aria-pressed="true"]::after{content:"SELECTED";position:absolute;top:-10px;right:12px;background:var(--accent);color:var(--accent-fg);font-size:9px;font-weight:900;letter-spacing:.09em;padding:3px 7px;border-radius:999px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:800 14px inherit;font-family:inherit;padding:12px 20px;min-height:46px;border:0;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;cursor:pointer;box-shadow:0 8px 20px rgba(15,118,110,.22);transition:.16s}
+.btn:hover:not(:disabled){transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent);box-shadow:none}
+.btn.danger{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;box-shadow:0 8px 20px rgba(220,38,38,.22)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.hint{margin:0;font-size:13px;color:var(--muted)}
+.msg{font-weight:800;color:var(--accent)}
+.progress{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .25s}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:end}
+.bar-label{font-size:14px;overflow-wrap:anywhere}
+.bar-val{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.track{grid-column:1/-1;height:12px;border-radius:999px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.fill{height:100%;width:0;background:var(--c2);transition:width .35s}
+.fill.lead{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.total{font-size:12px;color:var(--muted)}
+.big{font-size:40px;font-weight:900;font-variant-numeric:tabular-nums}
+.stat{display:flex;gap:12px;align-items:baseline}
+.chartwrap{display:flex;flex-wrap:wrap;gap:16px 22px;align-items:center}
+.chart{width:160px;height:160px;flex:none}
+.chart.wide{width:min(100%,330px);height:auto;flex:1 1 230px;max-width:330px}
+.legend{display:flex;flex-direction:column;gap:7px;flex:1 1 200px;min-width:0}
+.leg-row{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:14px}
+.leg-row.lead{font-weight:800}
+.sw{width:14px;height:14px;border-radius:4px}
+.leg-val{font-variant-numeric:tabular-nums;font-size:13px;font-weight:700}
+.responses{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;padding-right:4px}
+.response{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--bg)}
+.response h4{margin:0 0 7px;font-size:14px}
+.response ul{margin:0;padding-left:18px;font-size:13px;color:var(--muted)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:520px){.hero{padding:22px 16px}.q{font-size:16px}.tabs{top:6px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+<div class="kicker">School leadership panel</div>
+<h1>AI for Thinking,<br>Not Dependency</h1>
+<p>Choose one answer for each question, submit your response, and watch the live results change instantly.</p>
+<div class="badges">
+<span class="badge"><span class="dot"></span> Live polling</span>
+<span class="badge">13 questions</span>
+<span class="badge">Anonymous responses</span>
+</div>
+<p class="hint" id="status" role="status" style="margin-top:12px;color:rgba(255,255,255,.85)"></p>
+</header>
+
+<div class="tabs" role="tablist">
+<button class="tab" role="tab" id="t-vote" aria-selected="true">Vote</button>
+<button class="tab" role="tab" id="t-res" aria-selected="false">Live Results</button>
+<button class="tab" role="tab" id="t-admin" aria-selected="false">Admin</button>
+</div>
+
+<section class="panel" id="p-vote">
+<div id="questions" style="display:contents"></div>
+<div class="card">
+<div class="row"><strong id="progress-text">0 of 13 answered</strong></div>
+<div class="progress"><span id="progress-bar"></span></div>
+<div class="row" style="margin-top:14px">
+<button class="btn" id="submit">Submit my answers</button>
+<button class="btn ghost" id="clear">Clear selection</button>
+<span class="msg" id="vmsg" role="status"></span>
+</div>
+<p class="hint" id="vhint">Your selected answers are highlighted in green. Unanswered questions are skipped.</p>
+</div>
+</section>
+
+<section class="panel" id="p-res" hidden>
+<div class="card"><div class="stat"><span class="big" id="nballots">0</span><span>participants voted</span><span class="hint" id="live">&nbsp;</span></div></div>
+<div class="card"><div class="row" role="group" aria-label="Chart style"><span class="hint">Chart style</span><button type="button" class="btn ghost" data-s="bars" aria-pressed="true">Bars</button><button type="button" class="btn ghost" data-s="donut" aria-pressed="false">Donut</button><button type="button" class="btn ghost" data-s="cols" aria-pressed="false">Columns</button></div></div>
+<div id="results" style="display:contents"></div>
+</section>
+
+<section class="panel" id="p-admin" hidden>
+<div class="card">
+<h3>Admin controls</h3>
+<p class="hint">Enter the admin password to export results or reset the poll.</p>
+<div class="row">
+<input id="admin-pass" type="password" placeholder="Admin password" style="flex:1 1 220px;min-height:46px;padding:0 14px;border:2px solid var(--line);border-radius:999px;font:inherit;background:var(--bg);color:var(--fg)">
+<button class="btn" id="admin-unlock">Unlock admin</button>
+</div>
+<span class="msg" id="amsg" role="status"></span>
+</div>
+
+<div class="card" id="admin-tools" hidden>
+<h3>Export and reset</h3>
+<p class="hint">Download the current combined results, inspect individual responses, or delete every vote.</p>
+<div class="row">
+<button class="btn" id="exp-csv">Export results (CSV)</button>
+<button class="btn danger" id="reset">Reset all votes</button>
+</div>
+<span class="msg" id="rmsg" role="status"></span>
+</div>
+
+<div class="card" id="responses-card" hidden>
+<h3>All responses</h3>
+<p class="hint" id="response-count">0 responses</p>
+<div id="all-responses" class="responses"></div>
+</div>
+</section>
+</div>
+
+<script>
+var QUESTIONS=[
+{q:"AI in schools is mainly:",o:["Opportunity","Challenge","Both","Unsure"]},
+{q:"Your school's AI readiness:",o:["Starting","Exploring","Piloting","Implementing","Leading"]},
+{q:"Students learn more from:",o:["What teachers say","What teachers do"]},
+{q:"Teachers should use AI:",o:["In front of students","Behind the scenes only"]},
+{q:"AI should primarily help students:",o:["Get answers","Ask better questions"]},
+{q:"When AI gives an answer, students should:",o:["Accept it","Verify it"]},
+{q:"Most important skill for the AI age:",o:["Creativity","Critical Thinking","Curiosity","Problem Solving"]},
+{q:"AI will have the biggest impact on:",o:["Teaching","Assessment","Administration","Personalized Learning"]},
+{q:"Biggest AI concern:",o:["Dependency","Plagiarism","Ethics","Privacy"]},
+{q:"Biggest AI benefit:",o:["Efficiency","Innovation","Personalization","Accessibility"]},
+{q:"The role of a teacher in the AI age is:",o:["Instructor","Facilitator","Mentor","Coach"]},
+{q:"AI should never replace:",o:["Teachers","Human Relationships","Empathy","Judgment"]},
+{q:"Grand Finale: which statement do you agree with most?",o:["Teach students to use AI","Teach students to think with AI","Teach students when not to use AI","All of the above"]}
+];
+var LETTERS="ABCDE";
+var DATABASE_URL="https://ai-thinking-poll-standalone-default-rtdb.firebaseio.com";
+var DB=DATABASE_URL.replace(/\/+$/,"");
+var ADMIN_PASSWORD="admin@123";
+var canVote=true,isAdmin=false,myId=null,current={},ballots=[],chartStyle="bars";
+function $(id){return document.getElementById(id)}
+try{myId=localStorage.getItem("poll-voter-id")}catch(e){}
+if(!myId){myId="v"+Date.now().toString(36)+Math.random().toString(36).slice(2,10);try{localStorage.setItem("poll-voter-id",myId)}catch(e){}}
+
+function buildVote(){
+var host=$("questions");
+QUESTIONS.forEach(function(x,i){
+var card=document.createElement("div");card.className="card";
+var head=document.createElement("div");head.className="qhead";
+var n=document.createElement("span");n.className="qn";n.textContent=i+1;
+var h=document.createElement("h3");h.className="q";h.textContent=x.q;
+head.appendChild(n);head.appendChild(h);
+var opts=document.createElement("div");opts.className="opts";
+x.o.forEach(function(t,j){
+var b=document.createElement("button");b.type="button";b.className="opt";b.dataset.q=i;b.dataset.o=j;b.setAttribute("aria-pressed","false");
+var l=document.createElement("span");l.className="letter";l.textContent=LETTERS[j];
+var s=document.createElement("span");s.textContent=t;
+var c=document.createElement("span");c.className="check";c.textContent="✓";
+b.appendChild(l);b.appendChild(s);b.appendChild(c);
+b.addEventListener("click",function(){current["q"+i]=j;paintVote()});
+opts.appendChild(b);
+});
+card.appendChild(head);card.appendChild(opts);host.appendChild(card);
+});
+}
+function paintVote(){
+document.querySelectorAll(".opt").forEach(function(b){
+b.setAttribute("aria-pressed",String(current["q"+b.dataset.q]===Number(b.dataset.o)));
+});
+var n=Object.keys(current).length;
+$("progress-text").textContent=n+" of "+QUESTIONS.length+" answered";
+$("progress-bar").style.width=(n/QUESTIONS.length*100)+"%";
+$("submit").disabled=n===0||!canVote;
+}
+function tally(){
+var counts=QUESTIONS.map(function(x){return x.o.map(function(){return 0})});
+ballots.forEach(function(b){QUESTIONS.forEach(function(x,i){var v=b.a&&b.a["q"+i];if(typeof v==="number"&&v>=0&&v<x.o.length)counts[i][v]++})});
+return counts;
+}
+function cvar(j){return "var(--c"+((j%5)+1)+")"}
+function svgEl(t,a){var e=document.createElementNS("http://www.w3.org/2000/svg",t);for(var k in a)e.setAttribute(k,a[k]);return e}
+function donutChart(c,total){
+var s=svgEl("svg",{viewBox:"0 0 120 120",role:"img","aria-label":"Donut chart"});s.setAttribute("class","chart");
+var R=40,C=2*Math.PI*R,cum=0;
+s.appendChild(svgEl("circle",{cx:60,cy:60,r:R,fill:"none",stroke:"var(--line)","stroke-width":22}));
+if(total)c.forEach(function(v,j){if(!v)return;var len=v/total*C;s.appendChild(svgEl("circle",{cx:60,cy:60,r:R,fill:"none",stroke:cvar(j),"stroke-width":22,"stroke-dasharray":len+" "+(C-len),"stroke-dashoffset":-cum,transform:"rotate(-90 60 60)"}));cum+=len});
+var t=svgEl("text",{x:60,y:60,"text-anchor":"middle","font-size":"20","font-weight":"800",fill:"var(--fg)"});t.textContent=total;s.appendChild(t);
+return s}
+function columnChart(x,c,total){
+var n=x.o.length,W=330,H=180,base=142,top=25,pl=10,gap=14,bw=(W-2*pl-gap*(n-1))/n;
+var s=svgEl("svg",{viewBox:"0 0 "+W+" "+H,role:"img","aria-label":"Column chart"});s.setAttribute("class","chart wide");
+s.appendChild(svgEl("line",{x1:pl,x2:W-pl,y1:base,y2:base,stroke:"var(--muted)","stroke-width":1}));
+c.forEach(function(v,j){var pct=total?v/total*100:0,h=(base-top)*pct/100,xx=pl+j*(bw+gap);
+if(h>0)s.appendChild(svgEl("rect",{x:xx,y:base-h,width:bw,height:h,rx:5,fill:cvar(j)}));
+var tv=svgEl("text",{x:xx+bw/2,y:base-h-6,"text-anchor":"middle","font-size":"12","font-weight":"800",fill:"var(--fg)"});tv.textContent=Math.round(pct)+"%";s.appendChild(tv);
+var tl=svgEl("text",{x:xx+bw/2,y:base+18,"text-anchor":"middle","font-size":"12","font-weight":"800",fill:"var(--muted)"});tl.textContent=LETTERS[j];s.appendChild(tl)});
+return s}
+function legendFor(x,c,total,max){
+var box=document.createElement("div");box.className="legend";
+x.o.forEach(function(t,j){var pct=total?Math.round(c[j]/total*100):0;
+var row=document.createElement("div");row.className="leg-row"+(total&&c[j]===max?" lead":"");
+var sw=document.createElement("span");sw.className="sw";sw.style.background=cvar(j);
+var lab=document.createElement("span");lab.textContent=LETTERS[j]+". "+t;
+var val=document.createElement("span");val.className="leg-val";val.textContent=c[j]+" ("+pct+"%)";
+row.appendChild(sw);row.appendChild(lab);row.appendChild(val);box.appendChild(row)});
+return box}
+function paintResults(){
+var counts=tally();$("nballots").textContent=ballots.length;var host=$("results");host.textContent="";
+QUESTIONS.forEach(function(x,i){var c=counts[i],total=c.reduce(function(a,b){return a+b},0),max=Math.max.apply(null,c);
+var card=document.createElement("div");card.className="card";
+var head=document.createElement("div");head.className="qhead";
+var n=document.createElement("span");n.className="qn";n.textContent=i+1;
+var h=document.createElement("h3");h.className="q";h.textContent=x.q;
+head.appendChild(n);head.appendChild(h);card.appendChild(head);
+if(chartStyle==="bars"){var bars=document.createElement("div");bars.className="bars";
+x.o.forEach(function(t,j){var pct=total?Math.round(c[j]/total*100):0;var row=document.createElement("div");row.className="bar-row";
+var lab=document.createElement("span");lab.className="bar-label";lab.textContent=LETTERS[j]+". "+t;
+var val=document.createElement("span");val.className="bar-val";val.textContent=c[j]+" ("+pct+"%)";
+var tr=document.createElement("div");tr.className="track";var f=document.createElement("div");f.className="fill"+(total&&c[j]===max?" lead":"");f.style.width=pct+"%";tr.appendChild(f);row.appendChild(lab);row.appendChild(val);row.appendChild(tr);bars.appendChild(row)});
+card.appendChild(bars)}else{var wrap=document.createElement("div");wrap.className="chartwrap";wrap.appendChild(chartStyle==="cols"?columnChart(x,c,total):donutChart(c,total));wrap.appendChild(legendFor(x,c,total,max));card.appendChild(wrap)}
+var tot=document.createElement("div");tot.className="total";tot.textContent=total+(total===1?" response":" responses");card.appendChild(tot);host.appendChild(card)});
+}
+function paintAllResponses(){
+if(!isAdmin)return;var host=$("all-responses");host.textContent="";
+$("response-count").textContent=ballots.length+(ballots.length===1?" response":" responses");
+if(!ballots.length){var p=document.createElement("p");p.className="hint";p.textContent="No responses yet.";host.appendChild(p);return}
+ballots.forEach(function(b,n){var box=document.createElement("div");box.className="response";
+var h=document.createElement("h4");h.textContent="Response "+(n+1);box.appendChild(h);
+var ul=document.createElement("ul");QUESTIONS.forEach(function(x,i){var v=b.a&&b.a["q"+i];var li=document.createElement("li");li.textContent="Q"+(i+1)+": "+(typeof v==="number"&&x.o[v]!==undefined?x.o[v]:"Not answered");ul.appendChild(li)});
+box.appendChild(ul);host.appendChild(box)});
+}
+function flash(el,text){el.textContent=text;setTimeout(function(){el.textContent=""},3500)}
+function setStatus(t){$("status").textContent=t}
+$("submit").addEventListener("click",function(){
+if(!Object.keys(current).length||!canVote)return;$("submit").disabled=true;
+fetch(DB+"/votes/"+myId+".json",{method:"PUT",body:JSON.stringify({a:current,t:Date.now()})})
+.then(function(r){if(!r.ok)throw{status:r.status};current={};paintVote();flash($("vmsg"),"Thank you! Your answers have been counted.");window.scrollTo(0,0);load()})
+.catch(function(e){setStatus(why(e));flash($("vmsg"),"Could not save your vote.");paintVote()});
+});
+$("clear").addEventListener("click",function(){current={};paintVote()});
+function showTab(name){
+[["t-vote","p-vote","vote"],["t-res","p-res","res"],["t-admin","p-admin","admin"]].forEach(function(a){
+$(a[0]).setAttribute("aria-selected",String(a[2]===name));$(a[1]).hidden=a[2]!==name});
+if(name==="res")paintResults();window.scrollTo(0,0)}
+$("t-vote").onclick=function(){showTab("vote")};
+$("t-res").onclick=function(){showTab("res")};
+$("t-admin").onclick=function(){showTab("admin")};
+document.querySelectorAll("[data-s]").forEach(function(b){b.addEventListener("click",function(){chartStyle=b.dataset.s;document.querySelectorAll("[data-s]").forEach(function(x){x.setAttribute("aria-pressed",String(x.dataset.s===chartStyle))});paintResults()})});
+function csvCell(s){return '"'+String(s).replace(/"/g,'""')+'"'}
+$("exp-csv").onclick=function(){
+var counts=tally(),lines=["Question,Option,Votes,Percent"];
+QUESTIONS.forEach(function(x,i){var total=counts[i].reduce(function(a,b){return a+b},0);
+x.o.forEach(function(t,j){lines.push([csvCell("Q"+(i+1)+". "+x.q),csvCell(t),counts[i][j],total?Math.round(counts[i][j]/total*100):0].join(","))})});
+var url=URL.createObjectURL(new Blob([lines.join("\n")],{type:"text/csv"}));var a=document.createElement("a");a.href=url;a.download="poll-results.csv";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(url);a.remove()},500)};
+$("admin-unlock").onclick=function(){
+var pw=$("admin-pass").value;
+if(pw===ADMIN_PASSWORD){isAdmin=true;$("admin-pass").value="";$("admin-tools").hidden=false;$("responses-card").hidden=false;flash($("amsg"),"Admin unlocked.");paintAllResponses()}
+else flash($("amsg"),"Wrong password.")};
+$("reset").onclick=function(){
+if(!isAdmin){flash($("rmsg"),"Enter the admin password first.");return}
+if(!confirm("Delete every vote from every participant? This cannot be undone."))return;
+fetch(DB+"/votes.json",{method:"DELETE"}).then(function(){flash($("rmsg"),"All votes deleted.");load()}).catch(function(){flash($("rmsg"),"Could not delete votes.")})};
+function why(e){
+if(e&&e.status===401)return "Firebase permission denied. In Firebase > Realtime Database > Rules, set .read and .write to true, then Publish.";
+if(e&&e.status===404)return "Database address not found. Check the database URL.";
+if(e&&e.status)return "Database error "+e.status+".";
+return "Cannot connect to the database. Open this page from its public web link, not as a local file."}
+function load(){
+return fetch(DB+"/votes.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw{status:r.status};return r.json()}).then(function(d){
+d=d||{};ballots=Object.keys(d).map(function(k){return{id:k,a:(d[k]&&d[k].a)||{}}});paintResults();paintAllResponses();$("live").textContent="● live";setStatus("Live results are connected.")})
+.catch(function(e){setStatus(why(e))})}
+buildVote();paintVote();paintResults();
+setStatus("Connecting to live results…");load();
+try{var es=new EventSource(DB+"/votes.json");es.addEventListener("put",load);es.addEventListener("patch",load)}catch(e){}
+setInterval(load,4000);
+</script>
+</body>
+</html>
